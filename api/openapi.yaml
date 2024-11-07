@@ -1,0 +1,177 @@
+openapi: 3.0.0
+info:
+  description: IPDetective API IP bot detection and IP geolocation
+  title: IPDetective API
+  version: 1.0.0
+servers:
+- url: https://api.ipdetective.io
+security:
+- ApiKeyAuth: []
+paths:
+  /ip:
+    get:
+      description: Retrieve information about the caller's IP address.
+      operationId: getMyIP
+      parameters:
+      - description: "If true, returns additional info like country and ASN."
+        explode: true
+        in: query
+        name: info
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IPResponse'
+          description: IP information response
+      summary: My IP
+    post:
+      description: "Lookup multiple IP addresses in one request. Maximum of 1,000\
+        \ IPs per request."
+      operationId: getBulkIP
+      parameters:
+      - description: "If true, returns additional info like country and ASN for each\
+          \ IP."
+        explode: true
+        in: query
+        name: info
+        required: false
+        schema:
+          type: boolean
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              example:
+              - 8.8.8.8
+              - 192.168.1.1
+              - 185.5.4.1
+              items:
+                type: string
+              type: array
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/IPResponse'
+                type: array
+          description: Bulk IP lookup response
+      summary: Bulk IP Lookup
+  /ip/{ip}:
+    get:
+      description: Lookup a specific IP address.
+      operationId: getIP
+      parameters:
+      - explode: false
+        in: path
+        name: ip
+        required: true
+        schema:
+          example: 8.8.8.8
+          type: string
+        style: simple
+      - description: "If true, returns additional info like country and ASN."
+        explode: true
+        in: query
+        name: info
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IPResponse'
+          description: Single IP lookup response
+      summary: Single IP Lookup
+  /usage:
+    get:
+      description: "Retrieve current API usage details, including request and lookup\
+        \ limits."
+      operationId: getUsage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageResponse'
+          description: API usage response
+      summary: API Usage
+components:
+  schemas:
+    IPResponse:
+      example:
+        country_code: US
+        bot: true
+        ip: 8.8.8.8
+        country_name: United States of America
+        asn_description: GOOGLE
+        type: datacenter
+        asn: 15169
+      properties:
+        ip:
+          example: 8.8.8.8
+          type: string
+        bot:
+          example: true
+          type: boolean
+        type:
+          enum:
+          - datacenter
+          - bot
+          - vpn
+          - proxy
+          - unknown
+          example: datacenter
+          type: string
+        asn:
+          example: 15169
+          type: integer
+        asn_description:
+          example: GOOGLE
+          type: string
+        country_code:
+          example: US
+          type: string
+        country_name:
+          example: United States of America
+          type: string
+      required:
+      - bot
+      - ip
+      type: object
+    UsageResponse:
+      example:
+        lookup_hits: 4
+        lookup_limit: 10000
+        request_limit: 1000
+        request_hits: 4
+      properties:
+        request_limit:
+          example: 1000
+          type: integer
+        lookup_limit:
+          example: 10000
+          type: integer
+        request_hits:
+          example: 4
+          type: integer
+        lookup_hits:
+          example: 4
+          type: integer
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: x-api-key
+      type: apiKey

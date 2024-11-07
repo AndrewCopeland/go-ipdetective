@@ -1,0 +1,147 @@
+openapi: 3.0.0
+info:
+  title: IPDetective API
+  version: 1.0.0
+  description: IPDetective API IP bot detection and IP geolocation
+servers:
+  - url: https://api.ipdetective.io
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    IPResponse:
+      type: object
+      required:
+        - ip
+        - bot
+      properties:
+        ip:
+          type: string
+          example: "8.8.8.8"
+        bot:
+          type: boolean
+          example: true
+        type:
+          type: string
+          enum: [datacenter, bot, vpn, proxy, unknown]
+          example: "datacenter"
+        asn:
+          type: integer
+          example: 15169
+        asn_description:
+          type: string
+          example: "GOOGLE"
+        country_code:
+          type: string
+          example: "US"
+        country_name:
+          type: string
+          example: "United States of America"
+    UsageResponse:
+      type: object
+      properties:
+        request_limit:
+          type: integer
+          example: 1000
+        lookup_limit:
+          type: integer
+          example: 10000
+        request_hits:
+          type: integer
+          example: 4
+        lookup_hits:
+          type: integer
+          example: 4
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /ip:
+    get:
+      summary: My IP
+      operationId: getMyIP
+      description: Retrieve information about the caller's IP address.
+      parameters:
+        - in: query
+          name: info
+          schema:
+            type: boolean
+          description: If true, returns additional info like country and ASN.
+      responses:
+        '200':
+          description: IP information response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IPResponse'
+
+    post:
+      summary: Bulk IP Lookup
+      operationId: getBulkIP
+      description: Lookup multiple IP addresses in one request. Maximum of 1,000 IPs per request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+              example: ["8.8.8.8", "192.168.1.1", "185.5.4.1"]
+      parameters:
+        - in: query
+          name: info
+          schema:
+            type: boolean
+          description: If true, returns additional info like country and ASN for each IP.
+      responses:
+        '200':
+          description: Bulk IP lookup response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IPResponse'
+
+  /ip/{ip}:
+    get:
+      summary: Single IP Lookup
+      operationId: getIP
+      description: Lookup a specific IP address.
+      parameters:
+        - in: path
+          name: ip
+          required: true
+          schema:
+            type: string
+            example: "8.8.8.8"
+        - in: query
+          name: info
+          schema:
+            type: boolean
+          description: If true, returns additional info like country and ASN.
+      responses:
+        '200':
+          description: Single IP lookup response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IPResponse'
+
+  /usage:
+    get:
+      summary: API Usage
+      operationId: getUsage
+      description: Retrieve current API usage details, including request and lookup limits.
+      responses:
+        '200':
+          description: API usage response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageResponse'
