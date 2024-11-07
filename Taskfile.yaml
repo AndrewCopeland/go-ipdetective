@@ -14,9 +14,9 @@ tasks:
           -o /local
       - rm git_push.sh
       - go get github.com/stretchr/testify/assert
-      - grep -rl "GIT_USER_ID" | grep -v "Taskfile.yaml" | xargs sed -i.bak "s/GIT_USER_ID/$GIT_USER_ID/g"
-      - grep -rl "GIT_REPO_ID" | grep -v "Taskfile.yaml" | xargs sed -i.bak "s/GIT_REPO_ID/$GIT_REPO_ID/g"
-      - grep -rl "openapiclient" | grep -v "Taskfile.yaml" | xargs sed -i.bak "s/openapiclient/$PACKAGE_NAME/g"
+      - grep -rl "GIT_USER_ID" | grep -v "Taskfile.yaml" | grep -v ".env" | xargs sed -i.bak "s/GIT_USER_ID/$GIT_USER_ID/g"
+      - grep -rl "GIT_REPO_ID" | grep -v "Taskfile.yaml" | grep -v ".env" | xargs sed -i.bak "s/GIT_REPO_ID/$GIT_REPO_ID/g"
+      - grep -rl "openapiclient" | grep -v "Taskfile.yaml" | grep -v ".env" | xargs sed -i.bak "s/openapiclient/$PACKAGE_NAME/g"
       - find . -type f -name "*.bak" -not -path "*/.git/*" -exec rm {} +
   push:
     desc: push a new version
